@@ -72,7 +72,7 @@ export class Browser {
   }
 
   async boot() {
-    this.browser = await launch({ args: ["--no-sandbox", "--disable-setuid-sandbox"], headless: !this.opt.showBrowser });
+    this.browser = await launch({ args: ["--no-sandbox", "--disable-setuid-sandbox"], headless: !this.opt.showBrowser , slowMo: 500 });
     this.page = await this.browser.newPage();
     return this;
   }
@@ -276,22 +276,46 @@ $doc.body.appendChild($style);
   }
 
   async setCurrentStory(kind: string, story: string, count: number ) {
+    // debugger;
     this.currentStory = { kind, story, count };
+    const storyId = toId(kind, story);
     const data = {
       key: "storybook-channel",
       event: {
         type: "setCurrentStory",
         args: [
           {
-            kind,
-            story,
+            storyId
           },
         ],
         from: "zisui",
       }
     };
     this.debug("Set story", kind, story);
-    await this.page.evaluate((d: typeof data) => window.postMessage(JSON.stringify(d), "*"), data);
+    // await this.page.goto(this.opt.storybookUrl + "/iframe.html?selectedKind=zisui&selectedStory=zisui");
+    // await this.openPage(`${this.opt.storybookUrl}/iframe.html?id=${kind.toLowerCase()}--${story.toLowerCase()}`);
+     await this.page.evaluate((d: typeof data) => window.postMessage(JSON.stringify(d), "*"), data);
   }
 
 }
+
+// Remove punctuation https://gist.github.com/davidjrice/9d2af51100e41c6c4b4a
+export const sanitize = (string: string) => {
+  return string
+    .toLowerCase()
+    .replace(/[ ’–—―′¿'`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+/, "")
+    .replace(/-+$/, "");
+};
+
+const sanitizeSafe = (string: string, part: string) => {
+  const sanitized = sanitize(string);
+  if (sanitized === "") {
+    throw new Error(`Invalid ${part} '${string}', must include alphanumeric characters`);
+  }
+  return sanitized;
+};
+
+export const toId = (kind: string, name: string) =>
+  `${sanitizeSafe(kind, "kind")}--${sanitizeSafe(name, "name")}`;

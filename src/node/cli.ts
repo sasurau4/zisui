@@ -65,7 +65,8 @@ function createOptions(): MainOptions {
     flat,
     include,
     exclude,
-    defaultViewport: viewport,
+    // defaultViewport: viewport,
+    defaultViewport: "414x736",
     parallel,
     serverCmd,
     serverTimeout,
@@ -75,8 +76,10 @@ function createOptions(): MainOptions {
     viewportDelay,
     reloadAfterChangeViewport,
     disableCssAnimation,
-    showBrowser: process.env["ZISUI_SHOW"] === "enabled",
-    logger: new Logger(verbose ? "verbose" : silent ? "silent" : "normal"),
+    // showBrowser: process.env["ZISUI_SHOW"] === "enabled",
+    showBrowser: true,
+    // logger: new Logger(verbose ? "verbose" : silent ? "silent" : "normal"),
+    logger: new Logger("verbose"),
   } as MainOptions;
   return opt;
 }
